@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/backend/">
+    <Project Path="backend/IdeasGroupKanban.API/IdeasGroupKanban.API.csproj" />
+    <Project Path="backend/IdeasGroupKanban.Application/IdeasGroupKanban.Application.csproj" />
+    <Project Path="backend/IdeasGroupKanban.Domain/IdeasGroupKanban.Domain.csproj" />
+    <Project Path="backend/IdeasGroupKanban.Infrastructure/IdeasGroupKanban.Infrastructure.csproj" />
+  </Folder>
+</Solution>

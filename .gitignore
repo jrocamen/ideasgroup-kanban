@@ -1,0 +1,19 @@
+﻿# Archivos de Visual Studio y temporales
+.vs/
+.vscode/
+temp-sakai/
+*.zip
+
+# Carpetas de compilacion de .NET
+[Bb]in/
+[Oo]bj/
+
+# Bases de datos locales
+*.db
+*.sqlite
+*.sqlite3
+
+# Node y Angular (Frontend)
+node_modules/
+dist/
+.angular/
