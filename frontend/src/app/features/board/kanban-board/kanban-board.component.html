@@ -1,0 +1,125 @@
+<div class="flex flex-column h-full">
+    <div class="flex flex-column mb-4 px-4 py-3 bg-white border-bottom-1 surface-border shadow-1 gap-3">
+        <!-- Top Row: Title and Actions -->
+        <div class="flex justify-content-between align-items-center">
+            <div class="flex align-items-center gap-4">
+                <div class="flex align-items-center gap-3">
+                    <button pButton icon="pi pi-arrow-left" class="p-button-rounded p-button-text" (click)="goBack()"></button>
+                    <h2 class="m-0 text-2xl text-800">{{ projectName }}</h2>
+                </div>
+                
+                <!-- Connected Users -->
+                <p-avatarGroup *ngIf="activeUsers.length > 0" styleClass="mt-1">
+                    <p-avatar *ngFor="let user of activeUsers | slice:0:3" [label]="user.charAt(0).toUpperCase()" shape="circle" size="normal" [style]="{'background-color': '#9c27b0', 'color': '#ffffff'}" pTooltip="{{ user }}" tooltipPosition="bottom"></p-avatar>
+                    <p-avatar *ngIf="activeUsers.length > 3" [label]="'+' + (activeUsers.length - 3)" shape="circle" size="normal" [style]="{'background-color': '#e0e0e0', 'color': '#212121'}"></p-avatar>
+                </p-avatarGroup>
+            </div>
+            
+            <div class="flex gap-2">
+                <button pButton label="PDF" icon="pi pi-file-pdf" class="p-button-danger p-button-outlined" (click)="exportReport('pdf')"></button>
+                <button pButton label="Excel" icon="pi pi-file-excel" class="p-button-success p-button-outlined" (click)="exportReport('excel')"></button>
+                <button pButton label="Nueva Columna" icon="pi pi-plus" class="p-button-primary" (click)="openNewColumnDialog()"></button>
+            </div>
+        </div>
+        
+        <!-- Bottom Row: Filter Bar -->
+        <div class="flex gap-3 align-items-center border-top-1 surface-border pt-3">
+            <span class="text-600 font-medium"><i class="pi pi-filter mr-1"></i> Filtros:</span>
+            <span class="p-input-icon-left w-14rem">
+                <i class="pi pi-search"></i>
+                <input pInputText type="text" [(ngModel)]="filterSearchText" placeholder="Buscar texto..." class="w-full" />
+            </span>
+            <p-dropdown [options]="priorities" [(ngModel)]="filterPriority" optionLabel="label" optionValue="value" placeholder="Cualquier Prioridad" [showClear]="true" styleClass="w-14rem"></p-dropdown>
+            <p-dropdown [options]="users" [(ngModel)]="filterAssignee" optionLabel="name" optionValue="id" placeholder="Cualquier Responsable" [showClear]="true" styleClass="w-14rem"></p-dropdown>
+        </div>
+    </div>
+
+    <!-- Scrollable board container -->
+    <div class="flex-grow-1 overflow-x-auto overflow-y-hidden px-4 pb-4">
+        <div cdkDropListGroup class="flex gap-4 h-full align-items-start">
+            
+            <div class="flex gap-4 h-full">
+                <!-- Column -->
+                <div *ngFor="let col of columns" class="surface-ground border-round-xl w-20rem flex flex-column shadow-2" style="max-height: 100%;">
+                    
+                    <!-- Column Header -->
+                    <div class="flex justify-content-between align-items-center p-3 border-bottom-1 surface-border bg-white" style="border-radius: 1rem 1rem 0 0;">
+                        <h4 class="m-0 text-700">{{ col.name }}</h4>
+                        <div class="flex gap-2">
+                            <button pButton icon="pi pi-plus" class="p-button-rounded p-button-text p-button-sm" (click)="openNewTaskDialog(col)"></button>
+                            <button pButton icon="pi pi-trash" class="p-button-rounded p-button-danger p-button-text p-button-sm" (click)="deleteColumn(col.id)"></button>
+                        </div>
+                    </div>
+
+                    <!-- Column Body (Drop List) -->
+                    <div 
+                        cdkDropList
+                        [cdkDropListData]="col.tasks || []"
+                        (cdkDropListDropped)="drop($event, col.id)"
+                        class="p-2 flex-grow-1 overflow-y-auto"
+                        style="min-height: 150px;">
+                        
+                        <!-- Task Card -->
+                        <div *ngFor="let task of col.tasks" 
+                             cdkDrag 
+                             [class.hidden]="!matchesFilter(task)"
+                             class="surface-card mb-3 p-3 border-round shadow-1 cursor-move hover:shadow-3 border-left-3" 
+                             [ngClass]="{'border-pink-500': task.priority === 'High', 'border-blue-500': task.priority === 'Medium', 'border-green-500': task.priority === 'Low'}">
+                            <div class="flex justify-content-between align-items-start mb-2">
+                                <span class="font-medium text-900 line-height-3">{{ task.title }}</span>
+                                <div class="flex gap-1">
+                                    <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-sm p-0 m-0" style="width: 2rem; height: 2rem;" (click)="editTask(task, $event)"></button>
+                                    <button pButton icon="pi pi-trash" class="p-button-rounded p-button-danger p-button-text p-button-sm p-0 m-0" style="width: 2rem; height: 2rem;" (click)="deleteTask(task.id)"></button>
+                                </div>
+                            </div>
+                            <p class="text-600 m-0 text-sm line-height-3">{{ task.description }}</p>
+                            
+                            <div class="flex align-items-center justify-content-between mt-3">
+                                <span class="text-xs text-500"><i class="pi pi-clock mr-1"></i>{{ task.createdAt | date:'shortDate' }}</span>
+                                <p-tag [severity]="getPrioritySeverity(task.priority)" [value]="getPriorityLabel(task.priority)"></p-tag>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<!-- New Column Dialog -->
+<p-dialog [(visible)]="columnDialog" [style]="{width: '450px'}" header="Nueva Columna" [modal]="true" class="p-fluid">
+    <ng-template pTemplate="content">
+        <div class="field">
+            <label for="colName">Nombre de la Columna</label>
+            <input type="text" pInputText id="colName" [(ngModel)]="newColumnName" required autofocus />
+        </div>
+    </ng-template>
+    <ng-template pTemplate="footer">
+        <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="columnDialog = false"></button>
+        <button pButton label="Guardar" icon="pi pi-check" class="p-button-text" (click)="saveColumn()"></button>
+    </ng-template>
+</p-dialog>
+
+<!-- New / Edit Task Dialog -->
+<p-dialog [(visible)]="taskDialog" [style]="{width: '450px'}" [header]="isEditTaskMode ? 'Editar Tarea' : 'Nueva Tarea'" [modal]="true" class="p-fluid">
+    <ng-template pTemplate="content">
+        <div class="field">
+            <label for="taskTitle">Título</label>
+            <input type="text" pInputText id="taskTitle" [(ngModel)]="newTask.title" required autofocus />
+        </div>
+        <div class="field">
+            <label for="taskDesc">Descripción</label>
+            <textarea id="taskDesc" pInputTextarea [(ngModel)]="newTask.description" rows="3"></textarea>
+        </div>
+        <div class="field">
+            <label for="priority">Prioridad</label>
+            <p-dropdown [options]="priorities" [(ngModel)]="newTask.priority" optionLabel="label" optionValue="value" appendTo="body"></p-dropdown>
+        </div>
+    </ng-template>
+    <ng-template pTemplate="footer">
+        <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="taskDialog = false"></button>
+        <button pButton label="Guardar" icon="pi pi-check" class="p-button-text" (click)="saveTask()"></button>
+    </ng-template>
+</p-dialog>

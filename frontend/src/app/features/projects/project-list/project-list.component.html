@@ -1,0 +1,87 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card">
+            <div class="flex justify-content-between align-items-center mb-4">
+                <h5>Proyectos</h5>
+                <button pButton pRipple label="Nuevo Proyecto" icon="pi pi-plus" class="p-button-primary" (click)="openNew()"></button>
+            </div>
+            
+            <span class="p-input-icon-left mb-4 w-full md:w-30rem">
+                <i class="pi pi-search"></i>
+                <input pInputText type="text" (input)="onSearch($event)" placeholder="Buscar proyectos..." class="w-full" />
+            </span>
+
+            <div class="grid">
+                <div class="col-12 md:col-6 lg:col-4" *ngFor="let project of projects">
+                    <div class="surface-card shadow-2 p-4 border-round cursor-pointer hover:shadow-4 transition-all transition-duration-200 border-top-3 border-blue-500" (click)="openBoard(project.id)">
+                        <div class="flex justify-content-between align-items-start mb-3">
+                            <div class="text-xl font-medium text-900">{{ project.name }}</div>
+                            <div class="flex gap-2 align-items-center">
+                                <p-tag [severity]="project.state === 'Completed' ? 'success' : (project.state === 'Active' ? 'warning' : 'info')" 
+                                       [value]="project.state === 'Completed' ? 'Completado' : (project.state === 'Active' ? 'En Progreso' : 'No Iniciado')"></p-tag>
+                                <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-sm p-0 m-0" style="width: 2rem; height: 2rem;" (click)="editProject(project, $event)"></button>
+                                <button pButton icon="pi pi-trash" class="p-button-rounded p-button-danger p-button-text p-button-sm p-0 m-0" style="width: 2rem; height: 2rem;" (click)="deleteProject(project.id, $event)"></button>
+                            </div>
+                        </div>
+                        <p class="text-600 line-height-3 mb-4 line-clamp-2" style="min-height: 48px;">{{ project.description }}</p>
+                        <div class="flex align-items-center text-500 gap-3">
+                            <span><i class="pi pi-calendar mr-2"></i>{{ project.startDate | date }}</span>
+                            <span><i class="pi pi-clock mr-2"></i>{{ project.expectedEndDate | date }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12" *ngIf="projects.length === 0">
+                    <div class="text-center p-5 text-600">
+                        <i class="pi pi-folder-open text-4xl mb-3"></i>
+                        <p>No se encontraron proyectos.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Paginator -->
+            <p-paginator *ngIf="totalRecords > 0" 
+                         [rows]="pageSize" 
+                         [totalRecords]="totalRecords" 
+                         (onPageChange)="onPageChange($event)"
+                         [rowsPerPageOptions]="[10, 20, 50]"
+                         styleClass="mt-4">
+            </p-paginator>
+        </div>
+    </div>
+</div>
+
+<p-dialog [(visible)]="projectDialog" [style]="{width: '450px'}" header="Detalles del Proyecto" [modal]="true" class="p-fluid">
+    <ng-template pTemplate="content">
+        <div class="field">
+            <label for="name">Nombre</label>
+            <input type="text" pInputText id="name" [(ngModel)]="project.name" required autofocus />
+            <small class="p-error" *ngIf="submitted && !project.name">El nombre es requerido.</small>
+        </div>
+        <div class="field">
+            <label for="description">Descripción</label>
+            <textarea id="description" pInputTextarea [(ngModel)]="project.description" required rows="3" cols="20"></textarea>
+        </div>
+        
+        <div class="formgrid grid">
+            <div class="field col">
+                <label for="startDate">Fecha de Inicio</label>
+                <p-calendar id="startDate" [(ngModel)]="startDate" appendTo="body"></p-calendar>
+            </div>
+            <div class="field col">
+                <label for="expectedEndDate">Fecha Fin Estimada</label>
+                <p-calendar id="expectedEndDate" [(ngModel)]="expectedEndDate" appendTo="body"></p-calendar>
+            </div>
+        </div>
+        
+        <div class="field" *ngIf="isEditMode">
+            <label for="state">Estado</label>
+            <p-dropdown id="state" [options]="states" [(ngModel)]="project.state" optionLabel="label" optionValue="value" appendTo="body" class="w-full"></p-dropdown>
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+        <button pButton pRipple label="Guardar" icon="pi pi-check" class="p-button-text" (click)="saveProject()"></button>
+    </ng-template>
+</p-dialog>

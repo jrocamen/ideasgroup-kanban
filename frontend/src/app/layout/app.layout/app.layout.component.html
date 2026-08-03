@@ -1,0 +1,9 @@
+<div class="layout-wrapper flex flex-column h-screen bg-gray-50">
+  <app-topbar></app-topbar>
+  <div class="layout-main-container flex flex-grow-1 overflow-hidden">
+    <app-sidebar class="hidden md:block w-16rem surface-overlay border-right-1 surface-border"></app-sidebar>
+    <div class="layout-main flex-grow-1 overflow-y-auto p-4 md:p-6">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
