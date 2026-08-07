@@ -17,11 +17,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         // Seed Users
         // In a real app we'd inject IPasswordHasher, here we'll assume the hash is pre-generated (e.g. SHA256 or bcrypt)
-<<<<<<< Updated upstream
-        string defaultHash = "$2a$11$b/wh6GslkK0Xp5WGi9xtveLqVRG6kL01zPl1JPz75NvDsdOZIO/4i";
-=======
         string defaultHash = "$2a$11$i/pzsIcwIc6lwhEApYEgcu/iqq7ikESZhsLWI1d1Kn2dUBlKh7sBy";
->>>>>>> Stashed changes
 
         builder.HasData(
             new User { Id = Guid.Parse("11111111-1111-1111-1111-111111111111"), Name = "Alice Evaluator", Email = "alice@ideasgroup.test", PasswordHash = defaultHash },
